@@ -76,6 +76,13 @@ WSGI_APPLICATION = 'csvsite.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ProfoundWanderer$blog',
+        'USER': 'ProfoundWanderer',
+        'PASSWORD': 'Welcome1!',
+        'HOST': 'ProfoundWanderer.mysql.pythonanywhere-services.com',
+    },
+    'mycomp': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
