@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>WhyMeCSV</title>
+    </head>
+    <body>
+    <div class="form-group">
+        <form action="{% url 'cleancsv:upload_csv' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="csv_file">
+        <input type="submit" value="Upload">
+        </form>
+    </div>
+    <div>
+        <form action="{% url 'cleancsv:upload_csv' %}" method="get" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="submit" name="csv" value="Export to CSV" />
+        </form>
+    </div>
+    <div>
+        <h3>{{ document.upload_start|timesince }}</h3>
+    </div>
+    </body>
+</html>
