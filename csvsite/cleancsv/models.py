@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 
 # need to download file from here
-fs = FileSystemStorage(location='/csv/unformatted')
+# fs = FileSystemStorage(location='/csv/unformatted')
 
 
 class Document(models.Model):
