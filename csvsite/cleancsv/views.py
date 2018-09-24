@@ -136,12 +136,6 @@ def uploadcsv(request):
         response = HttpResponse(done, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="done.csv"'
         return response
-        '''
-        if "CSV" in request.GET:
-            response = HttpResponse(done, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="done.csv"'
-            return response
-        '''
 
     except Exception as e:
         logging.getLogger("error_logger").error("Unable to upload file. " + repr(e))
