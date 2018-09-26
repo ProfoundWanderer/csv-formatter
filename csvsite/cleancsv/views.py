@@ -58,6 +58,12 @@ def uploadcsv(request):
         # print(f'Check these lines for an incomplete phone number: {phone_bad}')
 
         cols = list(df)
+        # if no first_name and last_name column then we look for the "name" column and split it
+        # not sure if this is the best way
+        # keeping name column for now to be safe.
+        if 'first_name' and 'last_name' not in cols:
+            df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
+
         """
         # checks to see if they have a name column or first and last name cols
         # not really needed but may be helpful
@@ -103,6 +109,7 @@ def uploadcsv(request):
         df['second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
         df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
 
+
         # needed for below merger. Gets column headers
         get_col_headers = str(list(df))
         # gets rid of [''] around header names
@@ -113,9 +120,8 @@ def uploadcsv(request):
         df["first_dupe"] = df.duplicated("email", keep=False) & ~df.duplicated("email", keep="first")
 
         def combine_rows(row, key="email", cols_to_combine=col_headers[3:]):
-            """takes in a row, looks at the key column
-                if its the first dupe, combines the data in cols_to_combine with the other rows with same key
-                needs a dataframe with a bool column first_dupe with True if the row is the first dupe"""
+            # takes in a row, looks at the key column if its the first dupe, combines the data in cols_to_combine with the other rows with same key
+            # needs a dataframe with a bool column first_dupe with True if the row is the first dupe
 
             if row['first_dupe'] is True:
                 # making a df of dupes item
@@ -131,16 +137,14 @@ def uploadcsv(request):
                 row.first_dupe = False
             return row
 
-        # if no first_name and last_name column then we look for the "name" column and split it
-        # not sure if this is the best way
-        # keeping name column for now to be safe.
-        if 'first_name' and 'last_name' not in cols:
-            df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
 
         df = df.apply(combine_rows, axis=1, result_type=None)
-        df.drop_duplicates(subset=["email"], inplace=True)
+        # drops dup emails but keep first instance since everything should have been merged into that but ignores cells that are empty because
+        # before it would just delete all rows with an empty email cell but the first one.....
+        df = df[df['email'].isnull() | ~df[df['email'].notnull()].duplicated(subset='email',keep='first')]
         df.groupby('email').agg(lambda x: ", ".join(x)).reset_index()
         del df['first_dupe']
+
 
         # gets rid of random nan that pops up sometimes
         df = df.replace('(?:^|\W)nan(?:$|\W)', '', regex=True)
