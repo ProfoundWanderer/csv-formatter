@@ -150,11 +150,11 @@ def uploadcsv(request):
         done = df.to_csv(index=False)
         end = time.time()
         runtime = end - start
-        print(runtime)
 
         response = HttpResponse(done, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="done.csv"'
-        return render(request, 'cleancsv/upload_csv.html', {"runtime": runtime})
+        speed = render(request, 'cleancsv/upload_csv.html', {"runtime": runtime})
+        return response
 
     except Exception as e:
         logging.getLogger("error_logger").error("Unable to upload file. " + repr(e))
