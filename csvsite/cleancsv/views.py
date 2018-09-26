@@ -150,6 +150,7 @@ def uploadcsv(request):
         done = df.to_csv(index=False)
         end = time.time()
         runtime = end - start
+        print(runtime)
 
         response = HttpResponse(done, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="done.csv"'
