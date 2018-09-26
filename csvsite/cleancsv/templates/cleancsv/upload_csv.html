@@ -25,7 +25,9 @@
         </form>
     </div>
     <div>
+        {% block content %}
         <h3>Time to process CSV file: {{ runtime }}</h3>
+        {% endblock %}
     </div>
     </body>
 </html>
