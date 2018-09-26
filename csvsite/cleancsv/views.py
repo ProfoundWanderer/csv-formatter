@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.http import HttpResponse
+import time
 import pandas as pd
 
 # Create your views here.
@@ -12,7 +13,7 @@ import pandas as pd
 def uploadcsv(request):
     """
     Current Issues:
-
+    1. Get website to fail loud. messages now shows as JS instead of just the logs
     """
     data = {}
     if "GET" == request.method:
@@ -20,44 +21,54 @@ def uploadcsv(request):
     try:
         csv_file = request.FILES["csv_file"]
         if not csv_file.name.endswith('.csv'):
-            messages.error(request, 'File is not CSV type')
+            messages.error(request, 'File is not CSV type', extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             # if file is too large, return
         if csv_file.multiple_chunks():
-            messages.error(request, "Uploaded file is too big (%.2f MB)." % (csv_file.size / (1000 * 1000),))
+            messages.error(request, "Uploaded file is too big (%.2f MB)." % (csv_file.size / (1000 * 1000),), extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
-        # file_data = csv_file.read().decode("utf-8")
-
+        """
+        Current Issues:
+        3. If not first_name and last_name then find name to split it - if full name and not fist and last then
+          - Look for FirstName or something
+        3. if not phone look for mobile_phone or phone_number or something
+        3. if not email look for email address or something
+        2. makes sec contact email and phone sometimes when its not needed
+        1. Ian in try_combine_rows disappears!? find out why
+        """
         # point to file location.
+        start = time.time()
         df = pd.read_csv(csv_file)
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         df = df.dropna(how='all')  # removes rows that are completely empty
 
-        # get email list
+        # Checks for duplicate emails. May not be needed now.
         email_list = df['email']
+        email_counts = email_list.value_counts()
+        duplicate_emails = list(email_counts[email_counts > 1].index)
+        # print(f'Check these emails for duplicates: {duplicate_emails}')
 
-        # Order columns so if rows needs to merge it is done properly
+        # Prints the lines where phone len is less than 8 or greater than 15. May not be needed now.
+        phone_list = df['phone']
+        phone_list = phone_list.replace('[^0-9]+', '', regex=True)  # remove special characters
+        phone_len = phone_list.astype(str).str.len()  # had to add .astype(str) before .str in order for certain csvs to work
+        phone_bad = list(phone_len[(phone_len > 0) & (phone_len < 8) | (phone_len > 15)].index)
+        # print(f'Check these lines for an incomplete phone number: {phone_bad}')
+
         cols = list(df)
-
-        if 'first_name' in cols:
-            cols.insert(0, cols.pop(cols.index('first_name')))
+        """
+        # checks to see if they have a name column or first and last name cols
+        # not really needed but may be helpful
+        cols = list(df)
+        if 'first_name' and 'last_name' or 'name' not in cols:
+            if  'name' not in cols:
+                print('No first name and last name or name column')
+                exit()
         else:
-            print('No first_name column. Exiting...')
-            exit()
-
-        if 'last_name' in cols:
-            cols.insert(1, cols.pop(cols.index('last_name')))
-        else:
-            print('No last_name column. Exiting...')
-            exit()
-
-        if 'email' in cols:
-            cols.insert(2, cols.pop(cols.index('email')))
-        else:
-            print('No email column. Exiting...')
-            exit()
+            pass
+        """
 
         if (email_list.str.contains(',')).any():
             # splits email list so that everything before comma is put in email and the rest into secondary_email
@@ -72,18 +83,18 @@ def uploadcsv(request):
 
             df.rename(columns={'secondary_email': 'second_contact_email'}, inplace=True)
         else:
-            if 'second_contact_email' not in df.columns:
-                df['second_contact_email'] = ''
+            pass
 
         # validate email and move bad ones
-        df['second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)][
-            'email']
+        df['second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
         df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
 
+        """
         # this adds 'second_contact_phone' in case they do not have the column
         phone_value = ''
         if 'second_contact_phone' not in df:
             df.loc[:, 'second_contact_phone'] = phone_value
+        """
 
         # only keep numbers in phone column
         df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
@@ -120,6 +131,12 @@ def uploadcsv(request):
                 row.first_dupe = False
             return row
 
+        # if no first_name and last_name column then we look for the "name" column and split it
+        # not sure if this is the best way
+        # keeping name column for now to be safe.
+        if 'first_name' and 'last_name' not in cols:
+            df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
+
         df = df.apply(combine_rows, axis=1, result_type=None)
         df.drop_duplicates(subset=["email"], inplace=True)
         df.groupby('email').agg(lambda x: ", ".join(x)).reset_index()
@@ -130,12 +147,13 @@ def uploadcsv(request):
 
         # Convert names back from ex. first_name so system auto catches it
         df.columns = [i.title().replace('_', ' ') for i in df.columns]
-        print("Bottom of pandas stuff.")
         done = df.to_csv(index=False)
+        end = time.time()
+        runtime = end - start
 
         response = HttpResponse(done, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="done.csv"'
-        return response
+        return render(request, 'cleancsv/upload_csv.html', {"runtime": runtime})
 
     except Exception as e:
         logging.getLogger("error_logger").error("Unable to upload file. " + repr(e))
