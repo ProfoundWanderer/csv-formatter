@@ -22,14 +22,14 @@ def uploadcsv(request):
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             # if file is too large, return
         if csv_file.multiple_chunks():
-            messages.error(request, "Uploaded file is too big. Keep file make sure file is smaller than 5 MB (%.2f MB)." % (csv_file.size / (5242880),), extra_tags='alert')
+            messages.error(request, "Uploaded file is too big. Make sure file is less than 2 MB. (%.2f MB)." % (csv_file.size / (1000 * 1000),), extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
-        """
-        - merge then validate or order columns
-            - I just ordered since almost all CSVs should have a first name, last name, email, and phone column but not sure if best route
-        - I have been told there is a 5 mb csv size limit so need to change the size limit on the site
-        """
+            """
+            - merge then validate or order columns
+                - I just ordered since almost all CSVs should have a first name, last name, email, and phone column but not sure if best route
+            - I have been told there is a 5 mb csv size limit so need to change the size limit on the site
+            """
 
         start_time = time.time()
         # point to file location.
@@ -70,6 +70,9 @@ def uploadcsv(request):
             else:
                 print("What are these peoples numbers!?")
 
+        # have to do this again to update cols variable with new column names in case some changed
+        cols = list(df)
+
         # reorder columns to when they are merged it doesn't have double emails or phone numbers which bypasses the validation
         cols.insert(0, cols.pop(cols.index('first_name')))
         cols.insert(1, cols.pop(cols.index('last_name')))
@@ -109,6 +112,8 @@ def uploadcsv(request):
                 del df['temp_second_contact_email']
                 # this is to just clean up column (i.e. remove leadning what space and random extra commas from merge)
                 df['second_contact_email'] = df['second_contact_email'].replace('((, )$|[,]$)|(^\s)', '', regex=True)
+                # definitely not needed but one case bothered me so I added it
+                df['second_contact_email'] = df['second_contact_email'].replace('(  )', ' ', regex=True)
             else:
                 if 'second_contact_email' in cols:
                     df['second_contact_email'] = ''
@@ -120,6 +125,8 @@ def uploadcsv(request):
                     del df['temp_second_contact_email']
                     # this is to just clean up column (i.e. remove leadning what space and random extra commas from merge)
                     df['second_contact_email'] = df['second_contact_email'].replace('((, )$|[,]$)|(^\s)', '', regex=True)
+                    # definitely not needed but one case bothered me so I added it
+                    df['second_contact_email'] = df['second_contact_email'].replace('(  )', ' ', regex=True)
 
 
         # only keep numbers in phone column
@@ -136,7 +143,6 @@ def uploadcsv(request):
                 del df['temp_second_contact_phone']
                 # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
                 df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0)$)', '', regex=True)
-
             else:
                 if 'second_contact_phone' not in cols:
                     df['second_contact_phone'] = ''
@@ -190,8 +196,7 @@ def uploadcsv(request):
         # these two just cleans up the file and gets rid of random commas. Not really necessary but you know makes the file less ugly
         df = df.replace('^(, )|^(,)', '', regex=True)
         df = df.replace('(, , )', ', ', regex=True)
-        # definitely not needed but one case bothered me so I added it
-        df['second_contact_email'] = df['second_contact_email'].replace('(  )', ' ', regex=True)
+
 
 
 
