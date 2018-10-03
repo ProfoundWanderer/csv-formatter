@@ -25,7 +25,7 @@ def uploadcsv(request):
             messages.error(request, "Uploaded file is too big. Keep file make sure file is smaller than 5 MB (%.2f MB)." % (csv_file.size / (5242880),), extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
-       """
+        """
         - merge then validate or order columns
             - I just ordered since almost all CSVs should have a first name, last name, email, and phone column but not sure if best route
         - I have been told there is a 5 mb csv size limit so need to change the size limit on the site
