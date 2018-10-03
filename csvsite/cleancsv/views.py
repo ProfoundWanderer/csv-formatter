@@ -36,7 +36,8 @@ def uploadcsv(request):
         df = pd.read_csv(csv_file)
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
-        df = df.dropna(how='all')  # removes rows that are completely empty
+        # removes empty rows then empty columns
+        df = df.dropna(how='all')
         df = df.dropna(axis=1, how='all')
 
 
@@ -59,6 +60,8 @@ def uploadcsv(request):
                 df.rename(columns={'email_address': 'email'}, inplace=True)
             elif 'emailaddress' in cols:
                 df.rename(columns={'emailaddress': 'email'}, inplace=True)
+            elif 'email_(personal)_#1' in cols:  # because of zillow export
+                df.rename(columns={'email_(personal)_#1': 'email'}, inplace=True)
             else:
                 print("What are these peoples emails!?")
 
@@ -67,11 +70,27 @@ def uploadcsv(request):
                 df.rename(columns={'phone_number': 'phone'}, inplace=True)
             elif 'mobile_phone' in cols:
                 df.rename(columns={'mobile_phone': 'phone'}, inplace=True)
+            elif 'phone_(mobile)_#1' in cols:  # because of zillow export
+                df.rename(columns={'phone_(mobile)_#1': 'phone'}, inplace=True)
             else:
                 print("What are these peoples numbers!?")
 
         # have to do this again to update cols variable with new column names in case some changed
         cols = list(df)
+
+
+        # leaving these 2 just as a stafety check
+        email_list = df['email']
+        email_counts = email_list.value_counts()
+        duplicate_emails = list(email_counts[email_counts > 1].index)
+        print(f'Check these emails for duplicates: {duplicate_emails}')
+
+        phone_list = df['phone']
+        phone_list = phone_list.replace('[^0-9]+', '', regex=True)  # remove special characters
+        phone_len = phone_list.str.len()
+        phone_bad = list(phone_len[(phone_len < 8) | (phone_len > 15)].index)
+        print(f'Check these lines for an incomplete phone number: {phone_bad}')
+
 
         # reorder columns to when they are merged it doesn't have double emails or phone numbers which bypasses the validation
         cols.insert(0, cols.pop(cols.index('first_name')))
@@ -196,8 +215,6 @@ def uploadcsv(request):
         # these two just cleans up the file and gets rid of random commas. Not really necessary but you know makes the file less ugly
         df = df.replace('^(, )|^(,)', '', regex=True)
         df = df.replace('(, , )', ', ', regex=True)
-
-
 
 
         # Convert names back from ex. first_name so system auto catches it
