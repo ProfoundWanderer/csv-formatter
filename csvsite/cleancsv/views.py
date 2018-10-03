@@ -22,17 +22,13 @@ def uploadcsv(request):
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             # if file is too large, return
         if csv_file.multiple_chunks():
-            messages.error(request, "Uploaded file is too big (%.2f MB)." % (csv_file.size / (1000 * 1000),), extra_tags='alert')
+            messages.error(request, "Uploaded file is too big. Keep file make sure file is smaller than 5 MB (%.2f MB)." % (csv_file.size / (5242880),), extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
-        """
-        https://stackoverflow.com/questions/32787838/how-to-pass-data-between-django-views
-        Current Issues:
-        2. If not first_name and last_name then find name to split it - if full name and not fist and last then
-            - Look for FirstName or something
-        2. if not phone look for mobile_phone or phone_number or something
-        2. if not email look for email address or something
-        1. makes sec contact email and phone sometimes when its not needed
+       """
+        - merge then validate or order columns
+            - I just ordered since almost all CSVs should have a first name, last name, email, and phone column but not sure if best route
+        - I have been told there is a 5 mb csv size limit so need to change the size limit on the site
         """
 
         start_time = time.time()
@@ -41,8 +37,23 @@ def uploadcsv(request):
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         df = df.dropna(how='all')  # removes rows that are completely empty
+        df = df.dropna(axis=1, how='all')
+
 
         cols = list(df)
+        # if no first_name and last_name column then we look for the "name" column and split it
+        # not sure if this is the best way
+        # keeping name column for now to be safe.
+        if 'first_name' and 'last_name' not in cols:
+            if 'firstname' and 'lastname' in cols:
+                df.rename(columns={'firstname': 'first_name', 'lastname': 'last_name'}, inplace=True)
+            elif 'primary_firstname' and 'primary_lastname' in cols:
+                df.rename(columns={'primary_firstname': 'first_name', 'primary_lastname': 'last_name'}, inplace=True)
+            elif 'name' in cols:
+                df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
+            else:
+                print("Who are these people!?")
+
         if 'email' not in cols:
             if 'email_address' in cols:
                 df.rename(columns={'email_address': 'email'}, inplace=True)
@@ -51,33 +62,6 @@ def uploadcsv(request):
             else:
                 print("What are these peoples emails!?")
 
-
-        # Checks for duplicate emails. May not be needed now.
-        email_list = df['email']
-        email_counts = email_list.value_counts()
-        duplicate_emails = list(email_counts[email_counts > 1].index)
-        # print(f'Check these emails for duplicates: {duplicate_emails}')
-
-        # Prints the lines where phone len is less than 8 or greater than 15. May not be needed now.
-        phone_list = df['phone']
-        phone_list = phone_list.replace('[^0-9]+', '', regex=True)  # remove special characters
-        phone_len = phone_list.astype(str).str.len()  # had to add .astype(str) before .str in order for certain csvs to work
-        phone_bad = list(phone_len[(phone_len > 0) & (phone_len < 8) | (phone_len > 15)].index)
-        # print(f'Check these lines for an incomplete phone number: {phone_bad}')
-
-
-        # if no first_name and last_name column then we look for the "name" column and split it
-        # not sure if this is the best way
-        # keeping name column for now to be safe.
-        if 'first_name' and 'last_name' not in cols:
-            if 'firstname' and 'lastname' in cols:
-                df.rename(columns={'firstname': 'first_name', 'lastname': 'last_name'}, inplace=True)
-            elif 'name' in cols:
-                df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
-            else:
-                print("Who are these people!?")
-
-
         if 'phone' not in cols:
             if 'phone_number' in cols:
                 df.rename(columns={'phone_number': 'phone'}, inplace=True)
@@ -85,6 +69,13 @@ def uploadcsv(request):
                 df.rename(columns={'mobile_phone': 'phone'}, inplace=True)
             else:
                 print("What are these peoples numbers!?")
+
+        # reorder columns to when they are merged it doesn't have double emails or phone numbers which bypasses the validation
+        cols.insert(0, cols.pop(cols.index('first_name')))
+        cols.insert(1, cols.pop(cols.index('last_name')))
+        cols.insert(2, cols.pop(cols.index('email')))
+        cols.insert(3, cols.pop(cols.index('phone')))
+        df = df.reindex(columns=cols)
 
 
         if (df['email'].str.contains(',')).any():
@@ -107,28 +98,56 @@ def uploadcsv(request):
             pass
 
 
-        # validate email and move bad ones
-        df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
-        df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
-        # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
-        df['second_contact_email'] = df['second_contact_email'].fillna('') + ', ' + df['temp_second_contact_email'].fillna('')
-        del df['temp_second_contact_email']
-        # this is to just clean up column (i.e. remove leadning what space and random extra commas from merge)
-        df['second_contact_email'] = df['second_contact_email'].replace('((, )$|[,]$)|(^\s)', '', regex=True)
+        # if there is a bad email then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_email when its not needed
+        if ~df.email.str.contains('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').any():
+            if 'second_contact_email' in cols:
+                # validate email and move bad ones
+                df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
+                df['second_contact_email'] = df['second_contact_email'].fillna('') + ', ' + df['temp_second_contact_email'].fillna('')
+                del df['temp_second_contact_email']
+                # this is to just clean up column (i.e. remove leadning what space and random extra commas from merge)
+                df['second_contact_email'] = df['second_contact_email'].replace('((, )$|[,]$)|(^\s)', '', regex=True)
+            else:
+                if 'second_contact_email' in cols:
+                    df['second_contact_email'] = ''
+                    # validate email and move bad ones
+                    df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                    df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                    # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
+                    df['second_contact_email'] = df['second_contact_email'].fillna('') + ', ' + df['temp_second_contact_email'].fillna('')
+                    del df['temp_second_contact_email']
+                    # this is to just clean up column (i.e. remove leadning what space and random extra commas from merge)
+                    df['second_contact_email'] = df['second_contact_email'].replace('((, )$|[,]$)|(^\s)', '', regex=True)
 
 
         # only keep numbers in phone column
         df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
 
-        # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
-        df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
-        df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+        # if there is a bad phone then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_phone when its not needed
+        if df.phone.str.contains('^(?:(?!^.{,7}$|^.{16,}$).)*$').any():
+            if 'second_contact_phone' in cols:
+                # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
+                df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
+                df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
+                del df['temp_second_contact_phone']
+                # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
+                df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0)$)', '', regex=True)
 
-        # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
-        df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
-        del df['temp_second_contact_phone']
-        # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
-        df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0)$)', '', regex=True)
+            else:
+                if 'second_contact_phone' not in cols:
+                    df['second_contact_phone'] = ''
+                    # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
+                    df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                    df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                    # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
+                    df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
+                    del df['temp_second_contact_phone']
+                    # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
+                    df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0)$)', '', regex=True)
 
 
         # needed for below merger. Gets column headers
@@ -168,6 +187,12 @@ def uploadcsv(request):
 
         # gets rid of random nan that pops up sometimes
         df = df.replace('(?:^|\W)nan(?:$|\W)', '', regex=True)
+        # these two just cleans up the file and gets rid of random commas. Not really necessary but you know makes the file less ugly
+        df = df.replace('^(, )|^(,)', '', regex=True)
+        df = df.replace('(, , )', ', ', regex=True)
+        # definitely not needed but one case bothered me so I added it
+        df['second_contact_email'] = df['second_contact_email'].replace('(  )', ' ', regex=True)
+
 
 
         # Convert names back from ex. first_name so system auto catches it
