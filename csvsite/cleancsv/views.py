@@ -186,11 +186,12 @@ def uploadcsv(request):
                 # split phone numbers by comma and add to second_contact_phone
                 df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
                 df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
+                del df['temp_phone']
             if 'second_contact_phone' not in df.columns:
-                df['second_contact_phone'] = None
-                df.columns = df.columns.fillna('second_contact_phone')
+                df['second_contact_phone'] = ''
                 df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
                 df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
+                del df['temp_phone']
 
         # only keep numbers in phone column
         df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
