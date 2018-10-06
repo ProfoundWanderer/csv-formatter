@@ -98,6 +98,7 @@ def uploadcsv(request):
 
 
         if (df['email'].str.contains(',')).any():
+
             df['secondary_email'] = None
             df.columns = df.columns.fillna('secondary_email')
 
@@ -116,9 +117,8 @@ def uploadcsv(request):
         else:
             pass
 
-
         # if there is a bad email then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_email when its not needed
-        if ~df.email.str.contains('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').any():
+        if ~df.email.str.contains(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').all():
             if 'second_contact_email' in df.columns:
                 # validate email and move bad ones
                 df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
@@ -131,7 +131,7 @@ def uploadcsv(request):
                 # definitely not needed but one case bothered me so I added it
                 df['second_contact_email'] = df['second_contact_email'].replace('(  )', ' ', regex=True)
             else:
-                if 'second_contact_email' in df.columns:
+                if 'second_contact_email' not in df.columns:
                     df['second_contact_email'] = ''
                     # validate email and move bad ones
                     df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
