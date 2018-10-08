@@ -39,38 +39,134 @@ def uploadcsv(request):
         df = df.dropna(axis=1, how='all')
 
 
-        # if no first_name and last_name column then we look for the "name" column and split it
-        # not sure if this is the best way
-        # keeping name column for now to be safe.
+        # comment this asap
+        first_name_list = [
+            'firstname',
+            'primary_firstname',
+            'lead_first_name',
+            ]
+
+        last_name_list = [
+            'lastname',
+            'primary_lastname',
+            'lead_last_name',
+            ]
+
         if 'first_name' and 'last_name' not in df.columns:
-            if 'firstname' and 'lastname' in df.columns:
-                df.rename(columns={'firstname': 'first_name', 'lastname': 'last_name'}, inplace=True)
-            elif 'primary_firstname' and 'primary_lastname' in df.columns:
-                df.rename(columns={'primary_firstname': 'first_name', 'primary_lastname': 'last_name'}, inplace=True)
-            elif 'name' in df.columns:
+            if 'first_name' not in df.columns:
+                tried_first_names = []
+                for key in first_name_list:
+                    try:
+                        df.rename(columns={key: 'first_name'}, inplace=True)
+                        if 'first_name' not in df.columns:
+                            tried_first_names.append(key)
+                            if len(tried_first_names) == 3:
+                                try:
+                                    df = df.rename(columns={df.filter(like='firstname').columns[0]: 'first_name'})
+                                except IndexError:
+                                    # pass so can check if there is a 'name' column
+                                    pass
+                        else:
+                            break
+                    except:
+                        raise IndexError("No columns match values in first_name_list")
+            if 'first_name' in df.columns:
+                if 'last_name' not in df.columns:
+                    tried_last_names = []
+                    for key in last_name_list:
+                        try:
+                            df.rename(columns={key: 'last_name'}, inplace=True)
+                            if 'last_name' not in df.columns:
+                                tried_last_names.append(key)
+                                if len(tried_last_names) == 3:
+                                    try:
+                                        df = df.rename(columns={df.filter(like='lastname').columns[0]: 'last_name'})
+                                    except IndexError:
+                                        # pass so can check if there is a 'name' column
+                                        pass
+                            else:
+                                break
+                        except:
+                            raise IndexError("No columns match values in last_name_list")
+
+
+        if 'first_name' and 'last_name' not in df.columns:
+            if 'name' in df.columns:
                 df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
             else:
-                print("Who are these people!?")
+                raise IndexError("No column names match first_name and last_name")
+
+
+        email_list = [
+            'email_address',
+            'emailaddress',
+            'email_(personal)_#1',
+            'email_address_1',
+            'email_1',
+            'lead_email',
+            'emails',
+            ]
 
         if 'email' not in df.columns:
-            if 'email_address' in df.columns:
-                df.rename(columns={'email_address': 'email'}, inplace=True)
-            elif 'emailaddress' in df.columns:
-                df.rename(columns={'emailaddress': 'email'}, inplace=True)
-            elif 'email_(personal)_#1' in df.columns:  # because of zillow export
-                df.rename(columns={'email_(personal)_#1': 'email'}, inplace=True)
-            else:
-                print("What are these peoples emails!?")
+            tried_emails = []
+            for key in email_list:
+                try:
+                    df.rename(columns={key: 'email'}, inplace=True)
+                    if 'email' not in df.columns:
+                        tried_emails.append(key)
+                        if len(tried_emails) == 7:
+                            try:
+                                df = df.rename(columns={df.filter(like='email').columns[0]: 'email'})
+                            except IndexError:
+                                raise IndexError
+                    else:
+                        break
+                except:
+                    raise IndexError("No columns match values in email_list")
+
+
+        phone_list = [
+            'mobile_phone',
+            'cell_phone',
+            'primary_mobile_phone',
+            'phone_(mobile)_#1',
+            'telephone1',
+            'phone_1',
+            'phone_number',
+            'lead_phone',
+            'home_phone',
+            'home_#',
+            'phone_numbers',
+            'phones',
+            ]
 
         if 'phone' not in df.columns:
-            if 'phone_number' in df.columns:
-                df.rename(columns={'phone_number': 'phone'}, inplace=True)
-            elif 'mobile_phone' in df.columns:
-                df.rename(columns={'mobile_phone': 'phone'}, inplace=True)
-            elif 'phone_(mobile)_#1' in df.columns:  # because of zillow export
-                df.rename(columns={'phone_(mobile)_#1': 'phone'}, inplace=True)
-            else:
-                print("What are these peoples numbers!?")
+            tried_phones = []
+            for key in phone_list:
+                try:
+                    df.rename(columns={key: 'phone'}, inplace=True)
+                    if 'phone' not in df.columns:
+                        tried_phones.append(key)
+                        if len(tried_phones) == 12:
+                            try:
+                                df = df.rename(columns={df.filter(like='phone').columns[0]: 'phone'})
+                            except IndexError:
+                                raise IndexError
+                    else:
+                        break
+                except:
+                    raise IndexError("No columns match values in phone_list")
+
+
+        """
+        # this looks for a column like 'phone' with the least amount of code but can sometimes match homephone before mobile phone depending on CSV format
+        # may switch to this if I don't think it will be an issue or current way grows seems too much
+        if 'phone' not in df.columns:
+            try:
+                df = df.rename(columns={df.filter(like='phone').columns[0]: 'phone'})
+            except IndexError:
+                print('No columns including "phones" exists.')
+        """
 
 
         # have to do this again to update cols variable with new column names in case some changed
