@@ -27,6 +27,7 @@ rename_list = [
     'last_active_at',
     'last_communication_at',
     'average_property_price',
+    'name_first',
     ]
     
 match_list = [
@@ -38,12 +39,14 @@ match_list = [
     'lastname',
     'primary_lastname',
     'lead_last_name',
+    'name_last',
     ], [
     'email_address',
     'emailaddress',
     'email_(personal)_#1',
     'email_address_1',
     'email_1',
+    'email1',
     'lead_email',
     'emails',
     'subscriber_email',
@@ -55,6 +58,7 @@ match_list = [
     'telephone1',
     'phone_1',
     'phone_number',
+    'telephone_mobile',
     'phone(where_available)',
     'lead_phone',
     'home_phone',
