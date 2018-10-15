@@ -69,8 +69,6 @@ def uploadcsv(request):
                             else:
                                 continue
                         elif rename_col in df.columns:
-                            messages.error(request, "Uploaded file", extra_tags='alert')
-                            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
                             print(f"Matched {rename_col} with {try_col}.")
                             break
                         else:
@@ -84,12 +82,20 @@ def uploadcsv(request):
 
 
         if 'first_name' not in df.columns:
+            messages.error(request, "CSV file does not have a first_name column.", extra_tags='alert')
+            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a first_name column.')
         if 'last_name' not in df.columns:
+            messages.error(request, "CSV file does not have a last_name column.", extra_tags='alert')
+            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a last_name column.')
         if 'email' not in df.columns:
+            messages.error(request, "CSV file does not have a email column.", extra_tags='alert')
+            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a email column.')
         if 'phone' not in df.columns:
+            messages.error(request, "CSV file does not have a phone column.", extra_tags='alert')
+            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a phone column.')
 
 
