@@ -26,7 +26,7 @@ def uploadcsv(request):
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
             """
-            - I have been told there is a 5 mb csv size limit so need to change the size limit on the site
+            - Make rename/match thing a function?
             """
 
         start_time = time.time()
@@ -39,140 +39,84 @@ def uploadcsv(request):
         df = df.dropna(axis=1, how='all')
 
 
-        # comment this asap
-        first_name_list = [
-            'firstname',
-            'primary_firstname',
-            'lead_first_name',
-            ]
-
-        last_name_list = [
-            'lastname',
-            'primary_lastname',
-            'lead_last_name',
-            ]
-
-        if 'first_name' and 'last_name' not in df.columns:
-            if 'first_name' not in df.columns:
-                tried_first_names = []
-                for key in first_name_list:
+        # might put into a functions
+        # works but need it to do this with other stuff to
+        # make it not skip fn ln em ph if not matched but skip other stuff
+        # have it do some leadalicious stuff
+        i = -1
+        # for each item in rename_list
+        for rename_col in rename_list:
+            i += 1
+            # get i nested list in match_list and assign it to current_list
+            current_list = match_list[i]
+            tried_colname = []
+            for try_col in current_list:
+                if rename_col not in df.columns:
                     try:
-                        df.rename(columns={key: 'first_name'}, inplace=True)
-                        if 'first_name' not in df.columns:
-                            tried_first_names.append(key)
-                            if len(tried_first_names) == 3:
+                        df.rename(columns={try_col: rename_col}, inplace=True)
+                        tried_colname.append(try_col)
+                        if rename_col not in df.columns and i < 4:
+                            # len works but idk if its best
+                            if len(tried_colname) == len(current_list):
                                 try:
-                                    df = df.rename(columns={df.filter(like='firstname').columns[0]: 'first_name'})
-                                except IndexError:
-                                    # pass so can check if there is a 'name' column
-                                    pass
-                        else:
-                            break
-                    except:
-                        raise IndexError("No columns match values in first_name_list")
-            if 'first_name' in df.columns:
-                if 'last_name' not in df.columns:
-                    tried_last_names = []
-                    for key in last_name_list:
-                        try:
-                            df.rename(columns={key: 'last_name'}, inplace=True)
-                            if 'last_name' not in df.columns:
-                                tried_last_names.append(key)
-                                if len(tried_last_names) == 3:
-                                    try:
-                                        df = df.rename(columns={df.filter(like='lastname').columns[0]: 'last_name'})
-                                    except IndexError:
-                                        # pass so can check if there is a 'name' column
-                                        pass
+                                    df = df.rename(columns={df.filter(like=rename_col).columns[0]: rename_col})
+                                    print('Filter match', rename_col)
+                                    continue
+                                except Exception as e:
+                                    print(f"Unable to match a column the same as or close to {rename_col}. - Exception: {e}")
+                                    break
                             else:
-                                break
-                        except:
-                            raise IndexError("No columns match values in last_name_list")
+                                continue
+                        elif rename_col in df.columns:
+                            messages.error(request, "Uploaded file", extra_tags='alert')
+                            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
+                            print(f"Matched {rename_col} with {try_col}.")
+                            break
+                        else:
+                            print(f"Unable to match {rename_col} with any columns.")
+                            break
+                    except Exception as e:
+                        print(f"How did you get here!? - Exception: {e}")
+                        break
+                else:
+                    break  # just to be safe
 
 
-        if 'first_name' and 'last_name' not in df.columns:
-            if 'name' in df.columns:
-                df[['first_name', 'last_name']] = df.name.str.split(' ', 1, expand=True)
-            else:
-                raise IndexError("No column names match first_name and last_name")
-
-
-        email_list = [
-            'email_address',
-            'emailaddress',
-            'email_(personal)_#1',
-            'email_address_1',
-            'email_1',
-            'lead_email',
-            'emails',
-            ]
-
+        if 'first_name' not in df.columns:
+            raise KeyError('CSV file does not have a first_name column.')
+        if 'last_name' not in df.columns:
+            raise KeyError('CSV file does not have a last_name column.')
         if 'email' not in df.columns:
-            tried_emails = []
-            for key in email_list:
-                try:
-                    df.rename(columns={key: 'email'}, inplace=True)
-                    if 'email' not in df.columns:
-                        tried_emails.append(key)
-                        if len(tried_emails) == 7:
-                            try:
-                                df = df.rename(columns={df.filter(like='email').columns[0]: 'email'})
-                            except IndexError:
-                                raise IndexError
-                    else:
-                        break
-                except:
-                    raise IndexError("No columns match values in email_list")
-
-
-        phone_list = [
-            'mobile_phone',
-            'cell_phone',
-            'primary_mobile_phone',
-            'phone_(mobile)_#1',
-            'telephone1',
-            'phone_1',
-            'phone_number',
-            'lead_phone',
-            'home_phone',
-            'home_#',
-            'phone_numbers',
-            'phones',
-            ]
-
+            raise KeyError('CSV file does not have a email column.')
         if 'phone' not in df.columns:
-            tried_phones = []
-            for key in phone_list:
-                try:
-                    df.rename(columns={key: 'phone'}, inplace=True)
-                    if 'phone' not in df.columns:
-                        tried_phones.append(key)
-                        if len(tried_phones) == 12:
-                            try:
-                                df = df.rename(columns={df.filter(like='phone').columns[0]: 'phone'})
-                            except IndexError:
-                                raise IndexError
-                    else:
-                        break
-                except:
-                    raise IndexError("No columns match values in phone_list")
+            raise KeyError('CSV file does not have a phone column.')
 
 
-        """
-        # this looks for a column like 'phone' with the least amount of code but can sometimes match homephone before mobile phone depending on CSV format
-        # may switch to this if I don't think it will be an issue or current way grows seems too much
-        if 'phone' not in df.columns:
-            try:
-                df = df.rename(columns={df.filter(like='phone').columns[0]: 'phone'})
-            except IndexError:
-                print('No columns including "phones" exists.')
-        """
+        if 'address' not in df.columns:
+            if set(['house_number', 'dir_prefix', 'street', 'street_type', 'dir_suffix', 'suite', 'po_box']).issubset(df.columns):
+                df['address'] = (df['house_number'].astype(str).fillna('') + ' ' + df['dir_prefix'].astype(str).fillna('') + ' ' + 
+                df['street'].astype(str).fillna('') + ' ' + df['street_type'].astype(str).fillna('') + ' ' + df['dir_suffix'].astype(str).fillna('') + ' ' + 
+                df['suite'].astype(str).fillna('') + ' ' + df['po_box'].astype(str).fillna(''))
+            elif set(['house_number', 'direction_prefix', 'street', 'street_designator', 'suite_no']).issubset(df.columns):
+                df['address'] = (df['house_number'].astype(str).fillna('') + ' ' + df['direction_prefix'].astype(str).fillna('') + ' ' + 
+                df['street'].astype(str).fillna('') + ' ' + df['street_designator'].astype(str).fillna('') + ' ' + df['suite_no'].astype(str).fillna(''))
+
+        if 'assigned_agent' not in df.columns:
+            if set(['member_first_name', 'member_last_name']).issubset(df.columns):
+                df['assigned_agent'] = df['member_first_name'].fillna('') + ' ' + df['member_last_name'].fillna('')
+
+        if 'second_contact_name' not in df.columns:
+            if set(['secondary_title', 'secondary_first_name', 'secondary_nickname', 'secondary_last_name']).issubset(df.columns):
+                df['second_contact_name'] = (df['secondary_title'].fillna('') + ' ' + df['secondary_first_name'].fillna('') + ' ' + 
+                df['secondary_nickname'].fillna('') + df['secondary_last_name'].fillna(''))
+            elif set(['first_name_2', 'last_name_2']).issubset(df.columns):
+                df['second_contact_name'] = df['first_name_2'].fillna('') + ' ' + df['last_name_2'].fillna('')
 
 
         # have to do this again to update cols variable with new column names in case some changed
         cols = list(df)
 
-        # leaving these 2 just as a stafety check
+        """
         email_list = df['email']
         email_counts = email_list.value_counts()
         duplicate_emails = list(email_counts[email_counts > 1].index)
@@ -183,7 +127,7 @@ def uploadcsv(request):
         phone_len = phone_list.str.len()
         phone_bad = list(phone_len[(phone_len < 8) | (phone_len > 15)].index)
         print(f'Check these lines for an incomplete phone number: {phone_bad}')
-
+        """
 
         # reorder columns to when they are merged it doesn't have double emails or phone numbers which bypasses the validation
         cols.insert(0, cols.pop(cols.index('first_name')))
@@ -277,7 +221,7 @@ def uploadcsv(request):
         del df['first_dupe']
 
 
-        if df.phone.str.contains(',').any():
+        if df.phone.astype(str).str.contains(',').any():
             if 'second_contact_phone' in df.columns:
                 # split phone numbers by comma and add to second_contact_phone
                 df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
@@ -293,7 +237,7 @@ def uploadcsv(request):
         df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
 
         # if there is a bad phone then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_phone when its not needed
-        if df.phone.str.contains('^(?:(?!^.{,7}$|^.{16,}$).)*$').any():
+        if df.phone.astype(str).str.contains('^(?:(?!^.{,7}$|^.{16,}$).)*$').any():
             if 'second_contact_phone' in df.columns:
                 # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
                 df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
@@ -301,6 +245,10 @@ def uploadcsv(request):
                 # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
                 df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
                 del df['temp_second_contact_phone']
+                # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
+                df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
+                # definitely not needed but one case bothered me so I added it
+                df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
             else:
                 if 'second_contact_phone' not in df.columns:
                     df['second_contact_phone'] = ''
@@ -310,6 +258,10 @@ def uploadcsv(request):
                     # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
                     df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
                     del df['temp_second_contact_phone']
+                    # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
+                    df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
+                    # definitely not needed but one case bothered me so I added it
+                    df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
 
 
         # gets rid of random nan that pops up sometimes
@@ -317,10 +269,6 @@ def uploadcsv(request):
         # these two just cleans up the file and gets rid of random commas. Not really necessary but you know makes the file less ugly
         df = df.replace('^(, )|^(,)', '', regex=True)
         df = df.replace('(, , )', ', ', regex=True)
-        # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
-        df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
-        # definitely not needed but one case bothered me so I added it
-        df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
 
 
         # Convert names back from ex. first_name so system auto catches it
