@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 import time
 import pandas as pd
+from header_list import rename_list, match_list
 
 
 # Create your views here.
@@ -68,6 +69,8 @@ def uploadcsv(request):
                             else:
                                 continue
                         elif rename_col in df.columns:
+                            messages.error(request, "Uploaded file", extra_tags='alert')
+                            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
                             print(f"Matched {rename_col} with {try_col}.")
                             break
                         else:
