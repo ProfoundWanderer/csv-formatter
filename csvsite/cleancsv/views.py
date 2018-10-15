@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 import time
 import pandas as pd
-from header_list import rename_list, match_list
+from header_list.py import rename_list, match_list
 
 
 # Create your views here.
