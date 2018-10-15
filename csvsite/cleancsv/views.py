@@ -41,33 +41,42 @@ def uploadcsv(request):
 
 
         # might put into a functions
-        # works but need it to do this with other stuff to
-        # make it not skip fn ln em ph if not matched but skip other stuff
-        # have it do some leadalicious stuff
+        # starts at -1 so it doesn't skip first entry in list
         i = -1
-        # for each item in rename_list
+        # for each header column name in rename_list
         for rename_col in rename_list:
             i += 1
-            # get i nested list in match_list and assign it to current_list
+            # get  i  nested list in match_list (the list with all possible column names) and assign it to current_list
             current_list = match_list[i]
+            # create empty list of tried column header list from current_list
             tried_colname = []
+            # for each possible column name in current_list
             for try_col in current_list:
+                # if the rename_col not in df 
                 if rename_col not in df.columns:
                     try:
+                        # try to find try_col in df and rename it to what rename_col is
                         df.rename(columns={try_col: rename_col}, inplace=True)
+                        # add try_col to tried_col list so we don't try it again
                         tried_colname.append(try_col)
+                        # if the rename does not add rename_col to df and i is less than 4 then do below
+                        # I have i < 4 because the first 4 columns are needed to merger so they go through an additional matching attempt 
+                        # and the others are just so the headers are automatically matched when uploaded
                         if rename_col not in df.columns and i < 4:
-                            # len works but idk if its best
+                            # if the number of items we tried equals the number of items in the list
                             if len(tried_colname) == len(current_list):
                                 try:
+                                    # try to find the first column in df that is similar to rename_col and rename it to rename_col
                                     df = df.rename(columns={df.filter(like=rename_col).columns[0]: rename_col})
                                     print('Filter match', rename_col)
                                     continue
+                                # if try didn't work then throw exception since those 4 columns are needed for merger
                                 except Exception as e:
                                     print(f"Unable to match a column the same as or close to {rename_col}. - Exception: {e}")
                                     break
                             else:
                                 continue
+                        # this breaks so it doesn't continue trying to check when it has already been match
                         elif rename_col in df.columns:
                             print(f"Matched {rename_col} with {try_col}.")
                             break
@@ -81,25 +90,19 @@ def uploadcsv(request):
                     break  # just to be safe
 
 
+        # not needed since above raises an exception if any of the below columns aren't in df or matched this is just a safety check since it is quick
         if 'first_name' not in df.columns:
-            messages.error(request, "CSV file does not have a first_name column.", extra_tags='alert')
-            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a first_name column.')
         if 'last_name' not in df.columns:
-            messages.error(request, "CSV file does not have a last_name column.", extra_tags='alert')
-            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a last_name column.')
         if 'email' not in df.columns:
-            messages.error(request, "CSV file does not have a email column.", extra_tags='alert')
-            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a email column.')
         if 'phone' not in df.columns:
-            messages.error(request, "CSV file does not have a phone column.", extra_tags='alert')
-            return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             raise KeyError('CSV file does not have a phone column.')
 
 
         if 'address' not in df.columns:
+            # if all of these things are columns in the df then combine them under the column name 'address'
             if set(['house_number', 'dir_prefix', 'street', 'street_type', 'dir_suffix', 'suite', 'po_box']).issubset(df.columns):
                 df['address'] = (df['house_number'].astype(str).fillna('') + ' ' + df['dir_prefix'].astype(str).fillna('') + ' ' + 
                 df['street'].astype(str).fillna('') + ' ' + df['street_type'].astype(str).fillna('') + ' ' + df['dir_suffix'].astype(str).fillna('') + ' ' + 
@@ -109,10 +112,12 @@ def uploadcsv(request):
                 df['street'].astype(str).fillna('') + ' ' + df['street_designator'].astype(str).fillna('') + ' ' + df['suite_no'].astype(str).fillna(''))
 
         if 'assigned_agent' not in df.columns:
+            # if these columns in the df then combine them under the column name 'assigned_agent'
             if set(['member_first_name', 'member_last_name']).issubset(df.columns):
                 df['assigned_agent'] = df['member_first_name'].fillna('') + ' ' + df['member_last_name'].fillna('')
 
         if 'second_contact_name' not in df.columns:
+            # if all of these things are columns in the df then combine them under the column name 'second_contact_name'
             if set(['secondary_title', 'secondary_first_name', 'secondary_nickname', 'secondary_last_name']).issubset(df.columns):
                 df['second_contact_name'] = (df['secondary_title'].fillna('') + ' ' + df['secondary_first_name'].fillna('') + ' ' + 
                 df['secondary_nickname'].fillna('') + df['secondary_last_name'].fillna(''))
@@ -120,7 +125,7 @@ def uploadcsv(request):
                 df['second_contact_name'] = df['first_name_2'].fillna('') + ' ' + df['last_name_2'].fillna('')
 
 
-        # have to do this again to update cols variable with new column names in case some changed
+        # assign list of df cols to 'cols' for when we move columns and merge rows
         cols = list(df)
 
         """
