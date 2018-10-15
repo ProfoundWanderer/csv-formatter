@@ -22,7 +22,7 @@ def uploadcsv(request):
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
             # if file is too large, return
         if csv_file.multiple_chunks():
-            messages.error(request, "Uploaded file is too big. Make sure file is less than 5 MB. (%.2f MB)." % (csv_file.size / (5242880),), extra_tags='alert')
+            messages.error(request, "Uploaded file is too big. Make sure file is less than 5 MB. (%.2f MB)." % (csv_file.size / (1000 * 1000),), extra_tags='alert')
             return HttpResponseRedirect(reverse("cleancsv:upload_csv"))
 
             """
