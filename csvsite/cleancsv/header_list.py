@@ -48,8 +48,9 @@ match_list = [
     'email_1',
     'email1',
     'lead_email',
-    'emails',
+    'e-mail_address',
     'subscriber_email',
+    'emails',
     ], [
     'mobile_phone',
     'cell_phone',

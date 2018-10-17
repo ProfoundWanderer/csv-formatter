@@ -28,6 +28,7 @@ def uploadcsv(request):
 
             """
             - Make rename/match thing a function?
+            - Give over 5 MB warning but allow larger files once link to splitter is added?
             """
 
         start_time = time.time()
@@ -43,9 +44,9 @@ def uploadcsv(request):
         # might put into a functions
         # starts at -1 so it doesn't skip first entry in list
         i = -1
+        # for each header column name in rename_list
         for rename_col in rename_list:
             i += 1
-            # stops index error
             if i < 28:
                 # get  i  nested list in match_list (the list with all possible column names) and assign it to current_list
                 current_list = match_list[i]
@@ -88,7 +89,10 @@ def uploadcsv(request):
                             print(f"How did you get here!? - Exception: {e}")
                             break
                     else:
-                        break  # just to be safe
+                        print(f"Matched {rename_col} with {try_col}.")
+                        break
+                else:
+                    break  # just to be safe
 
 
         # not needed since above raises an exception if any of the below columns aren't in df or matched this is just a safety check since it is quick
