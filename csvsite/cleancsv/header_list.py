@@ -63,6 +63,8 @@ match_list = [
     'phone(where_available)',
     'lead_phone',
     'home_phone',
+    'cell_phone_#',
+    'phone_#',
     'home_#',
     'phone_numbers',
     'phones',
