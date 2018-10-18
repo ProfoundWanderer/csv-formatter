@@ -40,6 +40,12 @@ def uploadcsv(request):
         df = df.dropna(how='all')
         df = df.dropna(axis=1, how='all')
 
+        if 'first_name' and 'last_name' not in df.columns:
+            if 'name' in df.columns:
+                df[['first_name', 'last_name']] = df['name'].str.split(' ', 1, expand=True)
+            # for top producer
+            elif 'contact' in df.columns:
+                df[['last_name', 'first_name']] = df['contact'].str.split(',', 1, expand=True)
 
         # might put into a functions
         # starts at -1 so it doesn't skip first entry in list
@@ -102,8 +108,9 @@ def uploadcsv(request):
             raise KeyError('CSV file does not have a last_name column.')
         if 'email' not in df.columns:
             raise KeyError('CSV file does not have a email column.')
-        if 'phone' not in df.columns:
-            raise KeyError('CSV file does not have a phone column.')
+        # phone may not be important for merger so testing
+        # if 'phone' not in df.columns:
+            # raise KeyError('CSV file does not have a phone column.')
 
 
         if 'address' not in df.columns:
@@ -237,38 +244,25 @@ def uploadcsv(request):
         df.groupby('email').agg(lambda x: ", ".join(x)).reset_index()
         del df['first_dupe']
 
-
-        if df.phone.astype(str).str.contains(',').any():
-            if 'second_contact_phone' in df.columns:
-                # split phone numbers by comma and add to second_contact_phone
-                df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
-                df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
-                del df['temp_phone']
-            if 'second_contact_phone' not in df.columns:
-                df['second_contact_phone'] = ''
-                df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
-                df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
-                del df['temp_phone']
-
-        # only keep numbers in phone column
-        df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
-
-        # if there is a bad phone then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_phone when its not needed
-        if df.phone.astype(str).str.contains('^(?:(?!^.{,7}$|^.{16,}$).)*$').any():
-            if 'second_contact_phone' in df.columns:
-                # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
-                df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
-                df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
-                # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
-                df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
-                del df['temp_second_contact_phone']
-                # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
-                df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
-                # definitely not needed but one case bothered me so I added it
-                df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
-            else:
+        if 'phone' in df.columns:
+            if df.phone.astype(str).str.contains(',').any():
+                if 'second_contact_phone' in df.columns:
+                    # split phone numbers by comma and add to second_contact_phone
+                    df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
+                    df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
+                    del df['temp_phone']
                 if 'second_contact_phone' not in df.columns:
                     df['second_contact_phone'] = ''
+                    df['phone'], df['temp_phone'] = df['phone'].str.split(',', 1).str
+                    df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_phone'].astype(str).fillna('')
+                    del df['temp_phone']
+
+            # only keep numbers in phone column
+            df['phone'] = df['phone'].replace('[^0-9]+', '', regex=True)
+
+            # if there is a bad phone then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_phone when its not needed
+            if df.phone.astype(str).str.contains('^(?:(?!^.{,7}$|^.{16,}$).)*$').any():
+                if 'second_contact_phone' in df.columns:
                     # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
                     df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
                     df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
@@ -279,6 +273,19 @@ def uploadcsv(request):
                     df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
                     # definitely not needed but one case bothered me so I added it
                     df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
+                else:
+                    if 'second_contact_phone' not in df.columns:
+                        df['second_contact_phone'] = ''
+                        # moves phone numbers less than 8 and greater than 15 digits then removes them from phone
+                        df['temp_second_contact_phone'] = df[~df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                        df['phone'] = df[df['phone'].astype(str).str.contains(pat=r'^(?:(?!^.{,7}$|^.{16,}$).)*$', case=False, na=False)]['phone']
+                        # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
+                        df['second_contact_phone'] = df['second_contact_phone'].astype(str).fillna('') + ', ' + df['temp_second_contact_phone'].astype(str).fillna('')
+                        del df['temp_second_contact_phone']
+                        # this is to just clean up column (i.e. remove leadning what space, random extra commas from merge, and random .0)
+                        df['second_contact_phone'] = df['second_contact_phone'].replace('((, )$|[,]$|(^\s)|(\.0))', '', regex=True)
+                        # definitely not needed but one case bothered me so I added it
+                        df['second_contact_phone'] = df['second_contact_phone'].replace('(  )', ' ', regex=True)
 
 
         # gets rid of random nan that pops up sometimes
