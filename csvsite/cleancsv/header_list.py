@@ -27,20 +27,20 @@ rename_list = [
     'last_active_at',
     'last_communication_at',
     'average_property_price',
-    'name_first',
     ]
     
 match_list = [
-    [
+    [  # first_name
     'firstname',
     'primary_firstname',
     'lead_first_name',
-    ], [
+    'name_first',
+    ], [  # last_name
     'lastname',
     'primary_lastname',
     'lead_last_name',
     'name_last',
-    ], [
+    ], [  # email
     'email_address',
     'emailaddress',
     'email_(personal)_#1',
@@ -51,7 +51,7 @@ match_list = [
     'e-mail_address',
     'subscriber_email',
     'emails',
-    ], [
+    ], [  # phone
     'mobile_phone',
     'cell_phone',
     'primary_mobile_phone',
@@ -68,12 +68,12 @@ match_list = [
     'home_#',
     'phone_numbers',
     'phones',
-    ], [
+    ], [  # type
     'contact_type',
     'leadtype',
     'buyer/seller',
     'buyer_seller',
-    ], [
+    ], [  # assigned_agent
     'agent',
     'agentname',
     'lead_assigned_to_name',
@@ -83,68 +83,74 @@ match_list = [
     'assigned_staff',
     'lead_owner',
     'agent_id',
-    ], [
+    ], [  # assigned_lender
     'lender',
-    ], [
+    ], [  # alternate_phone
     'home_phone',
     'phone_2',
-    ], [
+    ], [  # street_address
     'address',
     'address1',
     'address_1',
     'street_1',
     'address_street_1',
-    ], [
+    ], [  # city
     'city',
     'address_city',
     'city_1',
-    ], [
+    'home_city',
+    ], [  # state
     'state',
     'state_1',
     'address_state',
-    ], [
+    'home_state',
+    ], [  # zip
     'zip',
     'zipcode',
     'zip_1',
     'address_zip',
-    ], [
-    'fax_number'
-    ], [
-    'work_phone'
-    ], [
+    'home_postal_code',
+    ], [  # fax
+    'fax_number',
+    'business_fax',
+    'home_fax',
+    ], [  # office_phone
+    'work_phone',
+    'business_phone',
+    ], [  # second_contact_phone
     'secondary_contact_phone',
-    ], [
+    ], [  # status
     'statusname',
     'pipeline_status',
-    ], [
+    ], [  # timeframe
     'timeframe',
     'timeframetype',
     'buying_timeframe',
-    ], [
+    ], [  # area
     'looking_in',
     'areasearchedmost',
     'location',
     'favorite_city',
-    ], [
+    ], [  # home_type
     'averagepropertytypeviewed',
     'property_type',
-    ], [
+    ], [  # source_details
     'source',
     'lead_source',
     'originalsource',
     'source_page_name',
     'sub_source',
-    ], [
+    ], [  # minimum_bedrooms
     'averagebedsviewed',
     'bedrooms',
-    ], [
+    ], [  # minimum_bathrooms
     'averagebathsviewed',
     'bathrooms',
-    ], [
+    ], [  # minimum_price
     'min_price_preference',
-    ], [
+    ], [  # maximum_price
     'max_price_preference',
-    ], [
+    ], [  # start_date
     'datecreated',
     'register_date',
     'registered',
@@ -154,14 +160,14 @@ match_list = [
     'registration_date',
     'creation_date',
     'created_at',
-    ], [
+    ], [  # last_active_at
     'dateactivity',
     'last_login',
     'lastvisitdate',
-    ], [
+    ], [  # last_communication_at
     'lastphonecall',
     'last_contacted_at',
-    ], [
+    ], [  # average_property_price
     'average_price',
     'averageprice',
     'list_price',

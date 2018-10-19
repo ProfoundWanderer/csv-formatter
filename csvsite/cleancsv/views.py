@@ -28,7 +28,7 @@ def uploadcsv(request):
 
             """
             - Make rename/match thing a function?
-            - Give over 5 MB warning but allow larger files once link to splitter is added?
+            - Sometimes it adds .0 in columns (looks like the phone column) haven't been able to reproduce
             """
 
         start_time = time.time()
