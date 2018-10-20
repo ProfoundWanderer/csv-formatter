@@ -33,7 +33,7 @@ def uploadcsv(request):
 
         start_time = time.time()
         # point to file location.
-        df = pd.read_csv(csv_file)
+        df = pd.read_csv(csv_file, dtype=str)
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         # removes empty rows then empty columns
