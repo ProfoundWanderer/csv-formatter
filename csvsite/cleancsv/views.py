@@ -28,7 +28,7 @@ def uploadcsv(request):
 
             """
             - Make rename/match thing a function?
-            - Sometimes it adds .0 in columns (looks like the phone column) haven't been able to reproduce
+            - Sometimes it adds .0 in columns (think solved by dtye=str) haven't been able to reproduce
             """
 
         start_time = time.time()

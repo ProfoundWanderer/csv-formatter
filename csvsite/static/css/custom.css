@@ -1,0 +1,16 @@
+.navbar {
+    background: #FF8C00;
+    box-shadow: 0 4px 2px -2px gray;
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+    color: #343a40;
+}
+
+.navbar-dark .navbar-brand {
+    color: #343a40;
+}
+
+.display-1 {
+    color: #FF8C00;
+}

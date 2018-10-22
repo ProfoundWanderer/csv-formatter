@@ -1,39 +1,68 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <!-- Favicon link: https://www.iconsdb.com/orange-icons/csv-icon.html -->
-        <!-- Link or create CSV splitter -->
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">        <!-- Latest compiled and minified JavaScript -->
-        <link rel="stylesheet" href="{% static 'css/cleancsv.css' %}" type="text/css">
-        <title>WhyMeCSV</title>
-    </head>
+<!-- Favicon link: https://www.iconsdb.com/orange-icons/csv-icon.html -->
+<!-- Link or create CSV splitter -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+<title>WhyMeCSV</title>
+
+<div>
+    {% if messages %}
+    <script>
+        {% for message in messages %}
+            alert("{{ message }}");
+        {% endfor %}
+    </script>
+    {% endif %}
+</div>
+
     <body>
-        <header class="clean">
-            <h1><a href="/">Why me CSV!?</a></h1>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+            <a class="navbar-brand" href="#"><img src="{% static 'logo.png' %}"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+                
+            
+            <div class="container collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav nav-fill w-100">
+                    <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-item nav-link active" href="#">What?</a>
+                    <a class="nav-item nav-link active" href="#">Columns Checked</a>
+                    <a class="nav-item nav-link active" href="#">Recent Additions/Fixes</a>
+                    <a class="nav-item nav-link active" href="#">Real Geeks Template</a>
+                    <a class="nav-item nav-link active" href="#github">Github Link</a>
+                </div>
+            </div>
+        </nav>
+
+        <header class="bg-dark" style="padding:256px 32px;">
+            <h1 class="display-1 text-center">Why Me CSV!?</h1>
+
+            <div class="form-group">
+                <form action="{% url 'cleancsv:upload_csv' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                    <label class="btn btn-primary btn-lg btn-block btn-size">
+                        Upload File <input id="file" type="file" class="btn btn-primary btn-lg btn-block btn-size" name="csv_file" hidden>
+                    </label>
+                    <input type="submit" class="btn btn-primary btn-lg btn-block" name="finished_file" value="Clean Me CSV">
+                </form>
+            </div>
+
+
+
         </header>
         
-        <div>
-            {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-            {% endif %}
-        </div>
+        
 
-        <div class="form-group">
-            <form action="{% url 'cleancsv:upload_csv' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" class="csv_button" name="csv_file">
-            <input type="submit" class="csv_button" name="finished_file" value="Clean Me CSV">
-            </form>
-        </div>
+        
 
         <div>
-            <P><a href="https://github.com/ProfoundWanderer/csv-formatter">View project on Github!</a></P>
+            <p id="github"><a href="https://github.com/ProfoundWanderer/csv-formatter">View project on Github!</a></p>
         </div>
 
     </body>
