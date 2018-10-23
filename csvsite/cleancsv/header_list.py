@@ -83,6 +83,7 @@ match_list = [
     'assigned_staff',
     'lead_owner',
     'agent_id',
+    'assigned_to'
     ], [  # assigned_lender
     'lender',
     ], [  # alternate_phone
@@ -94,22 +95,27 @@ match_list = [
     'address_1',
     'street_1',
     'address_street_1',
+    'home_street',
+    'address_1_-_street',
     ], [  # city
     'city',
     'address_city',
     'city_1',
     'home_city',
+    'address_1_-_city',
     ], [  # state
     'state',
     'state_1',
     'address_state',
     'home_state',
+    'address_1_-_state',
     ], [  # zip
     'zip',
     'zipcode',
     'zip_1',
     'address_zip',
     'home_postal_code',
+    'address_1_-_zip',
     ], [  # fax
     'fax_number',
     'business_fax',
@@ -140,6 +146,7 @@ match_list = [
     'originalsource',
     'source_page_name',
     'sub_source',
+    'website_source',
     ], [  # minimum_bedrooms
     'averagebedsviewed',
     'bedrooms',

@@ -53,49 +53,45 @@ def uploadcsv(request):
         # for each header column name in rename_list
         for rename_col in rename_list:
             i += 1
-            if i < 28:
-                # get  i  nested list in match_list (the list with all possible column names) and assign it to current_list
-                current_list = match_list[i]
-                # create empty list of tried column header list from current_list
-                tried_colname = []
-                # for each possible column name in current_list
-                for try_col in current_list:
-                    # if the rename_col not in df 
-                    if rename_col not in df.columns:
-                        try:
-                            # try to find try_col in df and rename it to what rename_col is
-                            df.rename(columns={try_col: rename_col}, inplace=True)
-                            # add try_col to tried_col list so we don't try it again
-                            tried_colname.append(try_col)
-                            # if the rename does not add rename_col to df and i is less than 4 then do below
-                            # I have i < 4 because the first 4 columns are needed to merger so they go through an additional matching attempt 
-                            # and the others are just so the headers are automatically matched when uploaded
-                            if rename_col not in df.columns and i < 4:
-                                # if the number of items we tried equals the number of items in the list
-                                if len(tried_colname) == len(current_list):
-                                    try:
-                                        # try to find the first column in df that is similar to rename_col and rename it to rename_col
-                                        df = df.rename(columns={df.filter(like=rename_col).columns[0]: rename_col})
-                                        print('Filter match', rename_col)
-                                        continue
-                                    # if try didn't work then throw exception since those 4 columns are needed for merger
-                                    except Exception as e:
-                                        print(f"Unable to match a column the same as or close to {rename_col}. - Exception: {e}")
-                                        break
-                                else:
+            # get  i  nested list in match_list (the list with all possible column names) and assign it to current_list
+            current_list = match_list[i]
+            # create empty list of tried column header list from current_list
+            tried_colname = []
+            # for each possible column name in current_list
+            for try_col in current_list:
+                # if the rename_col not in df 
+                if rename_col not in df.columns:
+                    try:
+                        # try to find try_col in df and rename it to what rename_col is
+                        df.rename(columns={try_col: rename_col}, inplace=True)
+                        # add try_col to tried_col list so we don't try it again
+                        tried_colname.append(try_col)
+                        # if the rename does not add rename_col to df and i is less than 4 then do below
+                        # I have i < 4 because the first 4 columns are needed to merger so they go through an additional matching attempt 
+                        # and the others are just so the headers are automatically matched when uploaded
+                        if rename_col not in df.columns and i < 4:
+                            # if the number of items we tried equals the number of items in the list
+                            if len(tried_colname) == len(current_list):
+                                try:
+                                    # try to find the first column in df that is similar to rename_col and rename it to rename_col
+                                    df = df.rename(columns={df.filter(like=rename_col).columns[0]: rename_col})
+                                    print('Filter match', rename_col)
                                     continue
-                            # this breaks so it doesn't continue trying to check when it has already been match
-                            elif rename_col in df.columns:
-                                print(f"Matched {rename_col} with {try_col}.")
-                                break
+                                # if try didn't work then throw exception since those 4 columns are needed for merger
+                                except Exception as e:
+                                    print(f"Unable to match a column the same as or close to {rename_col}. - Exception: {e}")
+                                    break
                             else:
-                                print(f"Unable to match {rename_col} with any columns.")
-                                break
-                        except Exception as e:
-                            print(f"How did you get here!? - Exception: {e}")
+                                continue
+                        # this breaks so it doesn't continue trying to check when it has already been match
+                        elif rename_col in df.columns:
+                            print(f"Matched {rename_col} with {try_col}.")
                             break
-                    else:
-                        print(f"Matched {rename_col} with {try_col}.")
+                        else:
+                            print(f"Unable to match {rename_col} with {try_col}.")
+                            continue
+                    except Exception as e:
+                        print(f"How did you get here!? - Exception: {e}")
                         break
                 else:
                     break  # just to be safe
@@ -182,11 +178,11 @@ def uploadcsv(request):
             pass
 
         # if there is a bad email then do stuff. its here to help with speed (not an issue but who knows) and to stop adding a second_contact_email when its not needed
-        if ~df.email.str.contains(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').all():
+        if ~df.email.str.contains(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$').all():
             if 'second_contact_email' in df.columns:
                 # validate email and move bad ones
-                df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
-                df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$', case=False, na=False)]['email']
+                df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$', case=False, na=False)]['email']
                 # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
                 df['second_contact_email'] = df['second_contact_email'].fillna('') + ', ' + df['temp_second_contact_email'].fillna('')
                 del df['temp_second_contact_email']
@@ -198,8 +194,8 @@ def uploadcsv(request):
                 if 'second_contact_email' not in df.columns:
                     df['second_contact_email'] = ''
                     # validate email and move bad ones
-                    df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
-                    df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', case=False, na=False)]['email']
+                    df['temp_second_contact_email'] = df[~df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$', case=False, na=False)]['email']
+                    df['email'] = df[df['email'].str.contains(pat=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$', case=False, na=False)]['email']
                     # merges columns so original second_contact_email doesn't get replaced by temp_second_contact_email
                     df['second_contact_email'] = df['second_contact_email'].fillna('') + ', ' + df['temp_second_contact_email'].fillna('')
                     del df['temp_second_contact_email']
