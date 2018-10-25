@@ -33,8 +33,9 @@ def uploadcsv(request):
 
         start_time = time.time()
         # point to file location.
-        # sep=None so pandas tries to get the delimiter and dtype=str so columns don't sometimes have .0 added and encoding to solve UnicodeDecodeError
-        df = pd.read_csv(csv_file, sep=None, dtype=str, encoding='ISO-8859-1')
+        # dtype=str so columns don't sometimes have .0 added and encoding to solve UnicodeDecodeError
+        # removed sep=None (where pandas tries to get the delimiter) but raises sep=None so pandas tries to get the delimiter and 
+        df = pd.read_csv(csv_file, dtype=str, encoding='ISO-8859-1')
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         # removes empty rows then empty columns
