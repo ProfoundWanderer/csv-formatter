@@ -1,14 +1,18 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<!-- https://help.pythonanywhere.com/pages/DjangoStaticFiles/
-     Favicon link: https://www.iconsdb.com/orange-icons/csv-icon.html -->
-<!-- Link or create CSV splitter -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-<link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
-<title>WhyMeCSV</title>
+    <head>
+        <!-- https://help.pythonanywhere.com/pages/DjangoStaticFiles/
+            Favicon link: https://www.iconsdb.com/orange-icons/csv-icon.html -->
+        <!-- Link or create CSV splitter -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>WhyMeCSV</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    </head>
 
 <div>
     {% if messages %}
@@ -21,7 +25,7 @@
 </div>
 
     <body>
-        <!-- Navbar 
+         
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
             <a class="navbar-brand" href="#"><img src="{% static 'logo.png' %}"></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
@@ -39,31 +43,26 @@
                     <a class="nav-item nav-link active" href="#github">Github Link</a>
                 </div>
         </nav>
-        -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Navbar</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        
+        <!-- Navbar
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand" href="#"><img src="{% static 'logo.png' %}"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar" aria-controls="myNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
-            <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
-                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <div class="navbar-nav mr-auto mt-2 mt-lg-0">
+                    <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-item nav-link active" href="#">What?</a>
+                    <a class="nav-item nav-link active" href="#">Columns Checked</a>
+                    <a class="nav-item nav-link active" href="#">Recent Additions/Fixes</a>
+                    <a class="nav-item nav-link active" href="#">Real Geeks Template</a>
+                    <a class="nav-item nav-link active" href="#github">Github Link</a>
+                </div>
             </div>
         </nav>
+        -->
 
 
         <header class="bg-dark" style="padding:256px 32px;">
@@ -94,5 +93,7 @@
             <p id="github"><a href="https://github.com/ProfoundWanderer/csv-formatter">View project on Github!</a></p>
         </div>
 
-    </body>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>    </body>
 </html>

@@ -110,7 +110,6 @@ match_list = [
     'home_state',
     'address_1_-_state',
     ], [  # zip
-    'zip',
     'zipcode',
     'zip_1',
     'address_zip',

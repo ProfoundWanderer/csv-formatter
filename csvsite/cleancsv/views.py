@@ -34,7 +34,7 @@ def uploadcsv(request):
         start_time = time.time()
         # point to file location.
         # sep=None so pandas tries to get the delimiter and dtype=str so columns don't sometimes have .0 added
-        df = pd.read_csv(csv_file, sep=None, dtype=str)
+        df = pd.read_csv(csv_file, sep=None, dtype=str, engine='python')
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         # removes empty rows then empty columns
@@ -154,7 +154,10 @@ def uploadcsv(request):
         cols.insert(0, cols.pop(cols.index('first_name')))
         cols.insert(1, cols.pop(cols.index('last_name')))
         cols.insert(2, cols.pop(cols.index('email')))
-        cols.insert(3, cols.pop(cols.index('phone')))
+        if 'phone' in df.columns:
+            cols.insert(3, cols.pop(cols.index('phone')))
+        
+        
         df = df.reindex(columns=cols)
 
 
