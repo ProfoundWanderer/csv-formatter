@@ -17,7 +17,6 @@ def uploadcsv(request):
     if "GET" == request.method:
         return render(request, "cleancsv/upload_csv.html", data)
     try:
-        print('1')
         csv_file = request.FILES["csv_file"]
         if not csv_file.name.endswith('.csv'):
             messages.error(request, 'File is not CSV type', extra_tags='alert')
@@ -32,12 +31,10 @@ def uploadcsv(request):
             - Sometimes it adds .0 in columns (think solved by dtye=str) haven't been able to reproduce
             """
 
-        print('2')
         start_time = time.time()
         # point to file location.
         # sep=None so pandas tries to get the delimiter and dtype=str so columns don't sometimes have .0 added
-        df = pd.read_csv(csv_file, sep=None, dtype=str)
-        print('3')
+        df = pd.read_csv(csv_file, sep=None, dtype=str, encoding='utf_8')
         df.columns = [i.lower().replace(' ', '_') for i in df.columns]  # lower case and replace spaces
         df.index += 2  # so when it says "check these lines" the numbers match with csv
         # removes empty rows then empty columns
