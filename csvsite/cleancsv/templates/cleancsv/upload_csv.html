@@ -4,7 +4,7 @@
     <head>
         <!-- https://help.pythonanywhere.com/pages/DjangoStaticFiles/
             Favicon link: https://www.iconsdb.com/orange-icons/csv-icon.html -->
-        <!-- Link or create CSV splitter -->
+        <!-- create CSV splitter | temp: http://filesplit.org/ -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,26 +25,10 @@
 </div>
 
     <body>
-         
-        <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-            <a class="navbar-brand" href="#"><img src="{% static 'logo.png' %}"></a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-                
-            
-            <div class="container collapse navbar-collapse" id="myNavbar">
-                <div class="navbar-nav nav-fill w-100">
-                    <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-                    <a class="nav-item nav-link active" href="#">What?</a>
-                    <a class="nav-item nav-link active" href="#">Columns Checked</a>
-                    <a class="nav-item nav-link active" href="#">Recent Additions/Fixes</a>
-                    <a class="nav-item nav-link active" href="#">Real Geeks Template</a>
-                    <a class="nav-item nav-link active" href="#github">Github Link</a>
-                </div>
-        </nav>
-        
-        <!-- Navbar
+        <!-- Nav bar 
+            add drop down for rename
+            link to stuff
+        -->
         <nav class="navbar navbar-expand-lg navbar-dark">
             <a class="navbar-brand" href="#"><img src="{% static 'logo.png' %}"></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar" aria-controls="myNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,19 +36,18 @@
             </button>
             
             <div class="collapse navbar-collapse" id="myNavbar">
-                <div class="navbar-nav mr-auto mt-2 mt-lg-0">
-                    <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-                    <a class="nav-item nav-link active" href="#">What?</a>
-                    <a class="nav-item nav-link active" href="#">Columns Checked</a>
-                    <a class="nav-item nav-link active" href="#">Recent Additions/Fixes</a>
-                    <a class="nav-item nav-link active" href="#">Real Geeks Template</a>
-                    <a class="nav-item nav-link active" href="#github">Github Link</a>
+                <div class="navbar-nav mr-auto mt-2 mt-lg-0 mx-auto">
+                    <a class="nav-item nav-link active space-out" href="#">What?</a>
+                    <a class="nav-item nav-link active space-out" href="#">Columns Checked</a>
+                    <a class="nav-item nav-link active space-out" href="#">Whats New?</a>
+                    <a class="nav-item nav-link active space-out" href="#">CSV Splitter</a>
+                    <a class="nav-item nav-link active space-out" href="#github">Contribute</a>
                 </div>
             </div>
         </nav>
-        -->
+        
 
-
+        <!-- Website name and file upload and clean button -->
         <header class="bg-dark" style="padding:256px 32px;">
             <h1 class="display-1 text-center">Why Me CSV!?</h1>
 
@@ -78,14 +61,379 @@
                 </form>
             </div>
 
-
-            
-                  
-
-
         </header>
         
         
+        <div class="row m-sec">
+            <div class="col-md-6 col-lg-6 stuff-left">
+                <h1>What It Does</h1>
+                <ol class="list-group" style="width: 700px">
+                    <li>Deletes all empty rows and columns</li>
+                    <li>Attempts to rename columns so there is a first name, last name, email, and 
+                    phone column</li>
+                    <li>Puts first name as first column followed by last name, email, and phone 
+                    column (This is needed for row merger.)</li>
+                    <li>If the email column contains a comma then it spilts on the comma and puts what was 
+                    split off into the second_contact_email column (It will create this column if it 
+                    doesn't excist)</li>
+                    <li>Moves any invalid emails to the the second_contact_email column (It will create this 
+                    column if it doesn't excist)</li>
+                    <li>Searches the rows for duplicate emails and if it finds any then it merges the rows</li>
+                    <li>Moves any invalid phone numbers to the the second_contact_phone column (It will 
+                    create this column if it doesn't excist)</li>
+                    <li>Cleans up the file the about (e.g. removes extra commas, nan, spaces, etc.)</li>
+                </ol>
+            </div>
+            <div class="col-md-6 col-lg-6 stuff-right">
+                    <img src="https://static.thenounproject.com/png/115668-200.png" class="pull-right" style="height: 75%; width: 75%"/>
+            </div>
+        </div>
+
+        <div class="row sec-2">
+            <div class="m-sec col-md-6 col-lg-6 stuff-left">
+                <h1>Columns that are looked for...</h1>
+                <h5>and variations that are renamed to the looked for column for quick matching.</h5>
+                <div class="row">
+                    <!-- List group -->
+                    <div class="col-6">
+                        <div class="list-group" id="myList" role="tablist">
+                            <a class="list-group-item list-group-item-action active" data-toggle="list" href="#first_name" role="tab">First Name</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_name" role="tab">Last Name</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#email" role="tab">Email</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#phone" role="tab">Phone</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#type" role="tab">Type</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#assigned_agent" role="tab">Assigned Agent</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#assigned_lender" role="tab">Assigned Lender</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#alternate_phone" role="tab">Alternate Phone</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#street_address" role="tab">Street Address</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#city" role="tab">City</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#state" role="tab">State</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#zip" role="tab">Zip</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#fax" role="tab">Fax</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#office_phone" role="tab">Office Phone</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#second_contact_phone" role="tab">Second Contact Phone</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#status" role="tab">Status</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#timeframe" role="tab">Timeframe</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#area" role="tab">Area</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#home_type" role="tab">Home Type</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#source_details" role="tab">Source Details</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#minimum_bedrooms" role="tab">Minimum Bedrooms</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#minimum_bathrooms" role="tab">Minimum Bathrooms</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#minimum_price" role="tab">Minimum Price</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#maximum_price" role="tab">Maximum Price</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#start_date" role="tab">Start Date</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_active_at" role="tab">Last Active</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_communication_at" role="tab">Last Communication At</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#average_property_price" role="tab">Average Property Price</a>
+                    </div>
+                    </div>
+                    <!-- Tab panes 
+                        add badge with number
+                        fix scroll - make it stay in div
+                        -->
+
+                    <div class="tab-content" id="nav-tabContent">
+                        <div class="tab-pane active hmmm" id="first_name" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>FirstName</li>
+                                    <li>Primary Firstname</li>
+                                    <li>Lead First Name</li>
+                                    <li>Name First</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="last_name" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>LastName</li>
+                                    <li>Primary Lastname</li>
+                                    <li>Lead Last Name</li>
+                                    <li>Name Last</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="email" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Email Address</li>
+                                    <li>EmailAddress</li>
+                                    <li>Email (Personal) #1</li>
+                                    <li>Email Address 1</li>
+                                    <li>Email 1</li>
+                                    <li>Email1</li>
+                                    <li>Lead Email</li>
+                                    <li>E-mail Address</li>
+                                    <li>Subscriber Email</li>
+                                    <li>Emails</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="phone" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Mobile Phone</li>
+                                    <li>Cell Phone</li>
+                                    <li>Primary Mobile Phone</li>
+                                    <li>Phone (Mobile) #1</li>
+                                    <li>Telephone1</li>
+                                    <li>Phone 1</li>
+                                    <li>Phone Number</li>
+                                    <li>Telephone Mobile</li>
+                                    <li>Phone(Where_Available)</li>
+                                    <li>Lead Phone</li>
+                                    <li>Home Phone</li>
+                                    <li>Cell Phone #</li>
+                                    <li>Phone #</li>
+                                    <li>Home #</li>
+                                    <li>Phone Numbers</li>
+                                    <li>Phones</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="type" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Contact Type</li>
+                                    <li>LeadType</li>
+                                    <li>Buyer/Seller</li>
+                                    <li>Buyer Seller</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="assigned_agent" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Agent</li>
+                                    <li>AgentName</li>
+                                    <li>Lead Assigned To Name</li>
+                                    <li>Realtor</li>
+                                    <li>Agent Assigned</li>
+                                    <li>BuyerAgent</li>
+                                    <li>Assigned Staff</li>
+                                    <li>Lead Owner</li>
+                                    <li>Agent Id</li>
+                                    <li>Assigned To</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="assigned_lender" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Lender</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="alternate_phone" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Home Phone</li>
+                                    <li>Phone 2</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="street_address" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Address</li>
+                                    <li>Address1</li>
+                                    <li>Address 1</li>
+                                    <li>Street 1</li>
+                                    <li>Address Street 1</li>
+                                    <li>Home Street</li>
+                                    <li>Address 1 - Street</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="city" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Address City</li>
+                                    <li>City 1</li>
+                                    <li>Home City</li>
+                                    <li>Address 1 - City</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="state" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>State 1</li>
+                                    <li>Address State</li>
+                                    <li>Home State</li>
+                                    <li>Address 1 - State</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="zip" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>ZipCode</li>
+                                    <li>Zip 1</li>
+                                    <li>Address Zip</li>
+                                    <li>Home Postal code</li>
+                                    <li>Address 1 - Zip</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="fax" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Fax Number</li>
+                                    <li>Business Fax</li>
+                                    <li>Home Fax</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="office_phone" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Work Phone</li>
+                                    <li>Business Phone</li>
+                                </ul>
+                            </p>
+                        </div>	                    
+                        <div class="tab-pane fade hmmm" id="second_contact_phone" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Secondary Contact Phone</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="status" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>StatusName</li>
+                                    <li>Pipeline Status</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="timeframe" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Timeframe</li>
+                                    <li>TimeframeType</li>
+                                    <li>Buying Timeframe</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="area" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Looking In</li>
+                                    <li>AreaSearchedMost</li>
+                                    <li>Location</li>
+                                    <li>Favorite City</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="home_type" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>AveragePropertyTypeViewed</li>
+                                    <li>Property Type</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="source_details" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Source</li>
+                                    <li>Lead Source</li>
+                                    <li>OriginalSource</li>
+                                    <li>Source Page Name</li>
+                                    <li>Sub Source</li>
+                                    <li>Website Source</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="minimum_bedrooms" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>AverageBedsViewed</li>
+                                    <li>Bedrooms</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="minimum_bathrooms" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>AverageBathsViewed</li>
+                                    <li>Bathrooms</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="minimum_price" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Min_Price_Preference</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="maximum_price" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Max_Price_Preference</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="start_date" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>DateCreated</li>
+                                    <li>Register Date</li>
+                                    <li>Registered</li>
+                                    <li>Date Added</li>
+                                    <li>RegisterDate</li>
+                                    <li>Contact Created Date</li>
+                                    <li>Registration Date</li>
+                                    <li>Creation Date</li>
+                                    <li>Created At</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="last_active_at" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>DateActivity</li>
+                                    <li>Last Login</li>
+                                    <li>LastVisitDate</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="last_communication_at" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>LastPhoneCall</li>
+                                    <li>Last Contacted At</li>
+                                </ul>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade hmmm" id="average_property_price" role="tabpanel">
+                            <p>
+                                <ul>
+                                    <li>Average Price</li>
+                                    <li>AveragePrice</li>
+                                    <li>List Price</li>
+                                    <li>AvgListingPrice</li>
+                                </ul>
+                            </p>
+                        </div>	
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="m-sec col-md-6 col-lg-6 stuff-right">
+                    <img src="http://bigwords101.com/wp-content/uploads/2016/01/3339bc5282346466c67e4f425c5dceb8.jpg" class="pull-right" style="height: 75%; width: 75%"/>
+            </div>
+        </div>
 
         
 
@@ -95,5 +443,6 @@
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>    </body>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    </body>
 </html>

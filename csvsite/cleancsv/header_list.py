@@ -98,13 +98,11 @@ match_list = [
     'home_street',
     'address_1_-_street',
     ], [  # city
-    'city',
     'address_city',
     'city_1',
     'home_city',
     'address_1_-_city',
     ], [  # state
-    'state',
     'state_1',
     'address_state',
     'home_state',
