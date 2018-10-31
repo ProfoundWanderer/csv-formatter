@@ -1,3 +1,7 @@
+html {
+    scroll-behavior: smooth;
+  }
+
 .navbar {
     background: #FF8C00;
     box-shadow: 0 4px 2px -2px gray;
