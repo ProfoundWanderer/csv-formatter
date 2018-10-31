@@ -230,12 +230,18 @@ def uploadcsv(request):
                 # making a df of dupes item
                 dupes = df[df[key] == row[key]]
 
+                # add if x isn't in y then do stuff?
                 # skipping the first row, since thats our first_dupe
                 for i, dupe_row in dupes.iloc[1:].iterrows():
                     for col in cols_to_combine:
                         dupe_row[col] = str(dupe_row[col])
                         row[col] = str(row[col])
-                        row[col] += ", " + dupe_row[col]
+                        # so fields don't have multiple of the same thing because of the merge 
+                        # e.g. buyer,buyer because 2 merged rows have the type buyer, now it just puts buyer there once
+                        if row[col] != dupe_row[col]:
+                            row[col] += ", " + dupe_row[col]
+                        else:
+                            continue
                 # make sure first_dupe doesn't get processed again
                 row.first_dupe = False
             return row
