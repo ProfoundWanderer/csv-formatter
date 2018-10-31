@@ -70,9 +70,15 @@ input[type=submit].btn-block {
 
 .sec-2 {
     background-color: #f1f1f1;
+    overflow: auto;
 }
 
 .follow-scroll {
     position: sticky;
     top: 20%;
+}
+
+.sec-3 {
+    margin-top: 160px;
+    margin-bottom: 160px;
 }
