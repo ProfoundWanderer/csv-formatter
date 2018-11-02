@@ -12,6 +12,7 @@
         <title>WhyMeCSV</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+        <script src="{% static 'js/thing.js' %}"></script> 
     </head>
 
 
@@ -129,11 +130,11 @@
                             <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_active_at" role="tab">Last Active<span class="badge badge-dark badge-pill float-right text-center">3</span></a>
                             <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_communication_at" role="tab">Last Communication At<span class="badge badge-dark badge-pill float-right text-center">2</span></a>
                             <a class="list-group-item list-group-item-action" data-toggle="list" href="#average_property_price" role="tab">Average Property Price<span class="badge badge-dark badge-pill float-right text-center">4</span></a>
-                    </div>
+                        </div>
                     </div>
                     <!-- Tab panes -->
 
-                    <div class="tab-content" id="nav-tabContent">
+                    <div class="wrapper tab-content" id="nav-tabContent">
                         <div class="tab-pane active follow-scroll" id="first_name" role="tabpanel">
                             <p>
                                 <ul>
