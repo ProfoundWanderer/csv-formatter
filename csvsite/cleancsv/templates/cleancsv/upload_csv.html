@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
         <script src="{% static 'js/thing.js' %}"></script> 
+        <link rel="shortcut icon" type="image/png" href="{% static 'csv-32.ico' %}"/>
     </head>
 
 
@@ -64,6 +65,7 @@
         </header>
         
         
+        <!-- What the formatter does section -->
         <div id="about" class="container">
             <div class="row m-sec">
                 <div class="col-md-6 col-lg-6" style="left: -10%">
@@ -92,15 +94,14 @@
             </div>
         </div>
 
-        <!-- Make list column a bit larger 
-            sticky not working-->
+        <!-- What columns it looks for it the ones it will rename -->
         <div id="columns" class="row sec-2">
             <div class="m-sec col-md-6 col-lg-6 stuff-left">
                 <h1>Columns that are looked for...</h1>
-                <h5>and variations that are renamed to the looked for column for quick matching.</h5>
+                <p>and variations that are renamed to the looked for column for quick matching.</p>
                 <div class="row">
                     <!-- List group -->
-                    <div class="col-6">
+                    <div class="col-7">
                         <div class="list-group" id="myList" role="tablist">
                             <a class="list-group-item list-group-item-action active" data-toggle="list" href="#first_name" role="tab">First Name<span class="badge badge-dark badge-pill float-right text-center">4</span></a>
                             <a class="list-group-item list-group-item-action" data-toggle="list" href="#last_name" role="tab">Last Name<span class="badge badge-dark badge-pill float-right text-center">4</span></a>
@@ -132,8 +133,8 @@
                             <a class="list-group-item list-group-item-action" data-toggle="list" href="#average_property_price" role="tab">Average Property Price<span class="badge badge-dark badge-pill float-right text-center">4</span></a>
                         </div>
                     </div>
-                    <!-- Tab panes -->
 
+                    <!-- Tab panes -->
                     <div class="wrapper tab-content" id="nav-tabContent">
                         <div class="tab-pane active follow-scroll" id="first_name" role="tabpanel">
                             <p>
@@ -438,6 +439,7 @@
         </div>
 
         
+        <!-- Recent changes section -->
         <div id="changes" class="container">
             <div class="row m-sec">
                 <div class="col-md-6 col-lg-6" style="left: -10%">
@@ -450,6 +452,7 @@
                             <li class="list-group-item list-group-item-danger">Issue: The code is ugly</li>
                             <li class="list-group-item list-group-item-danger">Issue: Probably a lot of stuff I don't know about</li>
                             <li class="list-group-item list-group-item-warning">Fix: No longer adds ".0" to the end of numbers in certain columns</li>
+                            <li class="list-group-item list-group-item-warning">Fix: Row merger tries to avoid adding duplicate text</li>
                             <li class="list-group-item list-group-item-success">Addition: Add more possible columns to match</li>
                             <li class="list-group-item list-group-item-success">Addition: Website is less ugly</li>
                         </ul>
@@ -458,9 +461,10 @@
         </div>
 
 
+        <!-- Links to CSV splitter. There are probably better options -->
         <div id="split" class="sec-2">
             <div class="row">
-                    <div class="stuff-left col-md-6 col-lg-6 sec-3">
+                    <div class="stuff-left col-md-6 col-lg-6 sec-3 text-center">
                         <h1>CSV Splitter</h1>
                         <p>
                         If the CSV is more than 5 MB then you may need to split it.
@@ -480,8 +484,23 @@
 
         
 
-        <div>
-            <p id="github"><a href="https://github.com/ProfoundWanderer/csv-formatter">View project on Github!</a></p>
+        <!-- Contribute section -->
+        <div id="github" class="container">
+            <div class="row m-sec">
+                <div class="col-md-6 col-lg-6" style="left: -10%">
+                    <a href="https://github.com/ProfoundWanderer/csv-formatter/">
+                        <img src="{% static 'mark.svg' %}" class="rounded float-left" style="height: 75%; width: 75%"/>
+                    </a>
+                </div>
+
+                    <div class="float-right col-md-6 col-lg-6 text-center" style="right: 11%">
+                        <h1>Contribute to the Project!</h1>
+                        <p>
+                            Pull requests, opening issues, and feature request are always welcome!
+                            <a href="https://github.com/ProfoundWanderer/csv-formatter">https://github.com/ProfoundWanderer/csv-formatter/</a>
+                        </p>
+                    </div>
+            </div>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
