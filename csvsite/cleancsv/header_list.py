@@ -61,6 +61,7 @@ match_list = [
     'phone_number',
     'telephone_mobile',
     'phone(where_available)',
+    'phone_(mobile)',
     'lead_phone',
     'home_phone',
     'cell_phone_#',
@@ -83,7 +84,8 @@ match_list = [
     'assigned_staff',
     'lead_owner',
     'agent_id',
-    'assigned_to'
+    'assigned_to',
+    'owner',
     ], [  # assigned_lender
     'lender',
     ], [  # alternate_phone
