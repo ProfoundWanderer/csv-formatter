@@ -45,7 +45,7 @@ def uploadcsv(request):
         df = df.dropna(how='all')
         df = df.dropna(axis=1, how='all')
 
-        if 'first_name' or 'last_name' not in df.columns:
+        if 'first_name' not in df.columns or 'last_name' not in df.columns:
             # for liondesk one off
             if 'name' and 'last_name' in df.columns:
                 df[['first_name', 'last_name']] = df['name'].str.split(' ', 1, expand=True)
