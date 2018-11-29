@@ -1,3 +1,5 @@
+# Used for renaming columns
+
 rename_list = [
     'first_name',
     'last_name',
